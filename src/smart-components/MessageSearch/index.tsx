@@ -6,6 +6,7 @@ import messageSearchReducer from './dux/reducers';
 import messageSearchInitialState from './dux/initialState';
 
 import useSetChannel from './hooks/useSetChannel';
+import useDebounce from './hooks/useDebounce';
 import useGetSearchMessages from './hooks/useGetSearchedMessages';
 import useScrollCallback from './hooks/useScrollCallback';
 
@@ -60,6 +61,7 @@ function MessageSearch(props: Props): JSX.Element {
   const [retryCount, setRetryCount] = useState(0); // this is a trigger flag for activating useGetSearchMessages
   const [selectedMessageId, setSelectedMessageId] = useState(0);
   const [messageSearchStore, messageSearchDispathcer] = useReducer(messageSearchReducer, messageSearchInitialState);
+  const debouncedSearchString = useDebounce(searchString, 500);
   const {
     allMessages,
     loading,
@@ -113,7 +115,7 @@ function MessageSearch(props: Props): JSX.Element {
   );
 
   useGetSearchMessages(
-    { currentChannel, channelUrl, searchString, messageSearchQuery, onResultLoaded, retryCount },
+    { currentChannel, channelUrl, searchString: debouncedSearchString, messageSearchQuery, onResultLoaded, retryCount },
     { sdk, logger, messageSearchDispathcer },
   );
 
@@ -126,7 +128,7 @@ function MessageSearch(props: Props): JSX.Element {
     setRetryCount(retryCount + 1);
   };
 
-  if (isInvalid && searchString) {
+  if (isInvalid && debouncedSearchString) {
     return (
       <div className={COMPONENT_CLASS_NAME}>
         <PlaceHolder
@@ -137,7 +139,7 @@ function MessageSearch(props: Props): JSX.Element {
     );
   }
 
-  if (loading && searchString) {
+  if (loading && debouncedSearchString) {
     return (
       <div className={COMPONENT_CLASS_NAME}>
         <PlaceHolder type={PlaceHolderTypes.SEARCHING} />
@@ -145,7 +147,7 @@ function MessageSearch(props: Props): JSX.Element {
     );
   }
 
-  if (!searchString) {
+  if (!debouncedSearchString) {
     return (
       <div className={COMPONENT_CLASS_NAME}>
         <PlaceHolder
