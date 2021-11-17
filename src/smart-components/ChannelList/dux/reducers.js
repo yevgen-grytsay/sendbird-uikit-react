@@ -17,9 +17,10 @@ export default function reducer(state, action) {
         initialized: true,
         loading: false,
         allChannels: action.payload,
-        currentChannel: (action.payload && action.payload.length && action.payload.length > 0)
-          ? action.payload[0].url
-          : null,
+        currentChannel: null,
+        // currentChannel: (action.payload && action.payload.length && action.payload.length > 0)
+        //   ? action.payload[0].url
+        //   : null,
       };
     case actions.FETCH_CHANNELS_SUCCESS: {
       const currentChannels = state.allChannels.map((c) => c.url);

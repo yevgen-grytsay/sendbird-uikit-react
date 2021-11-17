@@ -294,12 +294,7 @@ function ChannelList(props) {
                       theme={theme}
                       isActive={channel.url === currentChannel}
                       // todo - potential performance hit refactor
-                      ChannelAction={(
-                        <ChannelPreviewAction
-                          disabled={!isOnline}
-                          onLeaveChannel={() => onLeaveChannel(channel)}
-                        />
-                      )}
+                      ChannelAction={null}
                     />
                   )
               );

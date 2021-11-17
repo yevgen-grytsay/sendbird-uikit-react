@@ -209,14 +209,14 @@ function setupChannelList({
         sorted = sortChannelList(channelList);
         logger.info('ChannelList - channel list sorted', sorted);
       }
-      onChannelSelect(sorted[0]);
+      // onChannelSelect(sorted[0]);
       channelListDispatcher({
         type: channelActions.INIT_CHANNELS_SUCCESS,
         payload: sorted,
       });
       if (channelList && typeof channelList.forEach === 'function') {
         logger.info('ChannelList - mark all channels as delivered');
-        channelList.forEach((c) => c.markAsDelivered());
+        channelList.forEach((c) => sdk.markAsDelivered(c.url));
       }
     });
   } else {

@@ -134,7 +134,7 @@ ChannelPreview.propTypes = {
     userId: PropTypes.string,
   }),
   isActive: PropTypes.bool,
-  ChannelAction: PropTypes.element.isRequired,
+  ChannelAction: PropTypes.element,
   theme: PropTypes.string,
   onClick: PropTypes.func,
   tabIndex: PropTypes.number,
