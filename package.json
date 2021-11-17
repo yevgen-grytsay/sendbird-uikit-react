@@ -34,7 +34,9 @@
     "generate-component": "plop",
     "rollup": "npm run clean-release; rollup -c",
     "deploy-storybook": "storybook-to-ghpages",
-    "inspect": "npm run test; npm run lint;"
+    "inspect": "npm run test; npm run lint;",
+    "zodi-start": "react-scripts start",
+    "zodi-build": "react-scripts build"
   },
   "repository": {
     "type": "git",
@@ -56,6 +58,7 @@
     "prop-types": "^15.7.2",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0",
+    "react-router-dom": "^5.3.0",
     "sendbird": "^3.0.154"
   },
   "bugs": {
@@ -107,6 +110,7 @@
     "np": "^7.5.0",
     "plop": "^2.5.3",
     "postcss": "^8.3.5",
+    "react-scripts": "^4.0.3",
     "react-test-renderer": "^17.0.2",
     "rollup": "^2.53.1",
     "rollup-plugin-copy": "^3.4.0",
