@@ -147,7 +147,7 @@ function setupChannelList({
   sdkChannelHandlerId,
   channelListDispatcher,
   setChannelSource,
-  onChannelSelect,
+  // onChannelSelect,
   userFilledChannelListQuery,
   logger,
   sortChannelList,
