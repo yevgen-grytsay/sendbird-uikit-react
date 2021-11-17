@@ -3,12 +3,11 @@ import React, { useState } from 'react';
 import './Chat.css';
 
 import PropTypes from 'prop-types';
-// import { useHistory } from 'react-router-dom';
 import SendBirdProvider from '../lib/Sendbird';
 import ChannelList from '../smart-components/ChannelList';
 import Channel from '../smart-components/Conversation';
 import ChannelSettings from '../smart-components/ChannelSettings';
-import {LOG_LEVELS} from "../lib/Logger";
+import { LOG_LEVELS } from '../lib/Logger';
 // import App from "../smart-components/App";
 // import {
 //   SendBirdProvider,
@@ -22,12 +21,6 @@ const APP_ID = process.env.REACT_APP_SENDBIRD_APP_ID;
 const LOG_LEVEL = process.env.NODE_ENV === 'production' ? LOG_LEVELS.ERROR : LOG_LEVELS.ALL;
 
 export default function Chat({ userId, nickname, theme }) {
-  // const history = useHistory();
-  // useEffect(() => {
-  //   if (!userId || !nickname) {
-  //     history.push('/');
-  //   }
-  // }, [userId, nickname, history]);
   const [showSettings, setShowSettings] = useState(false);
   const [currentChannelUrl, setCurrentChannelUrl] = useState(null);
   return (
@@ -37,7 +30,7 @@ export default function Chat({ userId, nickname, theme }) {
         theme={theme}
         userId={userId}
         nickname={nickname}
-        config={{logLevel: LOG_LEVEL}}
+        config={{ logLevel: LOG_LEVEL }}
       >
         <div className="sendbird-app__wrap">
           <div className="sendbird-app__channellist-wrap">

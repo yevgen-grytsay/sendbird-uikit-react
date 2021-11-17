@@ -15,7 +15,7 @@ import EditUserProfile from '../../ui/EditUserProfile';
 import PlaceholderTypes from '../../ui/PlaceHolder/type';
 
 import AddChannel from './components/AddChannel';
-import ChannelPreviewAction from './components/ChannelPreviewAction';
+// import ChannelPreviewAction from './components/ChannelPreviewAction';
 import PlaceHolder from './components/Placeholder';
 
 import setupChannelList, {

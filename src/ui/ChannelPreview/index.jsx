@@ -147,4 +147,5 @@ ChannelPreview.defaultProps = {
   theme: 'light',
   onClick: () => { },
   tabIndex: 0,
+  ChannelAction: null,
 };
