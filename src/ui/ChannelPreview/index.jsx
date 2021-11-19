@@ -8,6 +8,7 @@ import Badge from '../Badge';
 import Icon, { IconColors, IconTypes } from '../Icon';
 import Label, { LabelTypography, LabelColors } from '../Label';
 import { LocalizationContext } from '../../lib/LocalizationContext';
+import Status from '../Status';
 
 import * as utils from './utils';
 
@@ -44,6 +45,7 @@ export default function ChannelPreview({
           userId={userId}
           theme={theme}
         />
+        <Status members={channel.members} />
       </div>
       <div className="sendbird-channel-preview__content">
         <div className="sendbird-channel-preview__content__upper">
