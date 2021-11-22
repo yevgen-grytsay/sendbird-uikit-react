@@ -1,0 +1,20 @@
+
+.sendbird-channel-preview__avatar {
+  position: relative;
+}
+
+.presence-status {
+  position: absolute;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+
+  &.online {
+    background-color: green;
+  }
+
+  &.offline {
+    background-color: gray;
+  }
+}

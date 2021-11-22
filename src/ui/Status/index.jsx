@@ -3,6 +3,8 @@ import React, {useEffect} from 'react';
 import usePresence from "../../hooks/usePresence";
 import withSendbirdContext from "../../lib/SendbirdSdkContext";
 // import { withSendBird } from "../../index";
+import './index.scss';
+
 
 function Status(props) {
   const {
@@ -27,11 +29,15 @@ function Status(props) {
 
   const isOnline = usePresence(otherMember?.userId, sdk);
 
-  const status = isOnline
-    ? (<div style={{backgroundColor: 'green'}}>Online</div>)
-    : (<div style={{backgroundColor: 'grey'}}>Offline</div>)
+  // const status = isOnline
+  //   ? (<div style={{backgroundColor: 'green'}}>Online</div>)
+  //   : (<div style={{backgroundColor: 'grey'}}>Offline</div>)
 
-  return status
+  const onlineClass = isOnline ? 'online' : 'offline';
+
+  return (
+    <div className={`presence-status ${onlineClass}`}></div>
+  );
 }
 
 export default withSendbirdContext(Status);
