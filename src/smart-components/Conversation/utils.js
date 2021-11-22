@@ -3,6 +3,7 @@ import * as channelActions from './dux/actionTypes';
 import * as topics from '../../lib/pubSub/topics';
 
 import { getSendingMessageStatus, getOutgoingMessageStates } from '../../utils';
+import { LabelStringSet } from '../../ui/Label';
 
 const MessageStatusType = getOutgoingMessageStates();
 const UNDEFINED = 'undefined';
@@ -254,6 +255,21 @@ export const pxToNumber = (px) => {
     }
   }
   return null;
+};
+
+export const getChannelTitle2 = (channel = {}, currentUserId, stringSet = LabelStringSet) => {
+  if (!channel || (!channel.name && !channel.members)) {
+    return stringSet.NO_TITLE;
+  }
+
+  if (channel.members.length === 1) {
+    return stringSet.NO_MEMBERS;
+  }
+
+  return channel.members
+    .filter(({ userId }) => userId !== currentUserId)
+    .map(({ nickname }) => (nickname || stringSet.NO_NAME))
+    .join(', ');
 };
 
 export default getParsedStatus;

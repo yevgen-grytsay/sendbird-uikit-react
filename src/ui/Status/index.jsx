@@ -1,9 +1,8 @@
-import React, {useEffect} from 'react';
-import usePresence from "../../hooks/usePresence";
-import withSendbirdContext from "../../lib/SendbirdSdkContext";
+import React from 'react';
+import PropTypes from 'prop-types';
+import usePresence from '../../hooks/usePresence';
+import withSendbirdContext from '../../lib/SendbirdSdkContext';
 import './index.scss';
-import PropTypes from "prop-types";
-
 
 function Status(props) {
   const {
@@ -17,19 +16,19 @@ function Status(props) {
     return null;
   }
 
-  const otherMember = members.find(c => c.userId !== sdk.currentUser.userId);
+  const otherMember = members.find((c) => c.userId !== sdk.currentUser.userId);
   const isOnline = usePresence(otherMember.userId, sdk);
   const onlineClass = isOnline ? 'online' : 'offline';
 
   return (
-    <div className={`presence-status ${onlineClass}`}></div>
+    <div className={`presence-status ${onlineClass}`} />
   );
 }
 
 export default withSendbirdContext(Status);
 
-
 Status.propTypes = {
+  members: PropTypes.array.isRequired,
   stores: PropTypes.shape({
     sdkStore: PropTypes.shape({
       initialized: PropTypes.bool,

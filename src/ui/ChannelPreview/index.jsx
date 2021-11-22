@@ -68,14 +68,7 @@ export default function ChannelPreview({
               type={LabelTypography.SUBTITLE_2}
               color={LabelColors.ONBACKGROUND_1}
             >
-              {utils.getChannelTitle(channel, userId, stringSet)}
-            </Label>
-            <Label
-              className="sendbird-channel-preview__content__upper__header__total-members"
-              type={LabelTypography.CAPTION_2}
-              color={LabelColors.ONBACKGROUND_2}
-            >
-              {utils.getTotalMembers(channel)}
+              {utils.getChannelTitle2(channel, userId, stringSet)}
             </Label>
             {
               isFrozen

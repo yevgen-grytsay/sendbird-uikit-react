@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-
 const state = {
   watchList: [],
 };
@@ -8,8 +7,7 @@ const state = {
 let sdk;
 
 const addToWatchList = ({ userId, setOnline }) => {
-
-  const watcherIndex = state.watchList.findIndex(w => w.userId === userId);
+  const watcherIndex = state.watchList.findIndex((w) => w.userId === userId);
   if (watcherIndex === -1) {
     state.watchList = [
       ...state.watchList,
@@ -49,13 +47,12 @@ const pollFnc = () => {
     return;
   }
 
-
   const userIdList = state.watchList.map(({ userId }) => userId);
   console.warn('users registered to track: ', userIdList);
 
   const listQuery = sdk.createApplicationUserListQuery();
   listQuery.userIdsFilter = userIdList;
-  listQuery.next(function (users, error) {
+  listQuery.next((users, error) => {
     if (error) {
       console.log('listQuery error', error);
       // Handle error.
@@ -63,8 +60,8 @@ const pollFnc = () => {
       console.log('listQuery ok', users);
       // userList = users;
 
-      users.forEach(user => {
-        const watcher = state.watchList.find(w => w.userId === user.userId);
+      users.forEach((user) => {
+        const watcher = state.watchList.find((w) => w.userId === user.userId);
         if (watcher) {
           watcher.setOnline(user.connectionStatus === sdk.User.ONLINE);
         } else {
@@ -73,18 +70,14 @@ const pollFnc = () => {
       });
     }
   });
-
 };
 
-let timer = setInterval(pollFnc, 10000);
-
+setInterval(pollFnc, 10000);
 
 export default function usePresence(userId, thisSdk) {
-
   const [isOnline, setOnline] = useState(null);
 
-  addToWatchList({userId, setOnline});
-
+  addToWatchList({ userId, setOnline });
 
   useEffect(() => {
     console.log('useEffect inside usePresence mounted', userId);

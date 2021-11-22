@@ -298,6 +298,7 @@ export const ConversationPanel = (props) => {
           ? renderChatHeader({ channel: currentGroupChannel, user })
           : (
             <ChatHeader
+              title={utils.getChannelTitle2(currentGroupChannel, user.userId)}
               theme={theme}
               currentGroupChannel={currentGroupChannel}
               currentUser={user}
@@ -424,7 +425,9 @@ ConversationPanel.propTypes = {
       error: PropTypes.bool,
     }),
     userStore: PropTypes.shape({
-      user: PropTypes.shape({}),
+      user: PropTypes.shape({
+        userId: PropTypes.string.isRequired,
+      }),
     }),
   }).isRequired,
   dispatchers: PropTypes.shape({
