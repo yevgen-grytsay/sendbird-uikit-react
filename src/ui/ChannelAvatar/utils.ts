@@ -7,11 +7,11 @@ export const getOpenChannelAvatar = (channel: SendBird.OpenChannel): string => {
 };
 
 export const getChannelAvatarSource = (channel: SendBird.GroupChannel, currentUserId: string): string | Array<string> => {
-  if (channel && channel.coverUrl) {
-    if (!(new RegExp(`^${DEFAULT_URL_PREFIX}`).test(channel.coverUrl))) {
-      return channel.coverUrl;
-    }
-  }
+  // if (channel && channel.coverUrl) {
+  //   if (!(new RegExp(`^${DEFAULT_URL_PREFIX}`).test(channel.coverUrl))) {
+  //     return channel.coverUrl;
+  //   }
+  // }
 
   return channel && channel.members
     ? channel.members
