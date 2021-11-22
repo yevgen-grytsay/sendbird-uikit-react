@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import { useEffect, useState } from 'react';
 
 
 const state = {
@@ -7,13 +7,13 @@ const state = {
 
 let sdk;
 
-const addToWatchList = ({userId, setOnline}) => {
+const addToWatchList = ({ userId, setOnline }) => {
 
   const watcherIndex = state.watchList.findIndex(w => w.userId === userId);
   if (watcherIndex === -1) {
     state.watchList = [
       ...state.watchList,
-      {userId, setOnline},
+      { userId, setOnline },
     ];
     console.log('addToWatchList add', userId);
 
@@ -29,12 +29,12 @@ const addToWatchList = ({userId, setOnline}) => {
   state.watchList = [
     ...state.watchList.slice(0, watcherIndex),
     ...state.watchList.slice(watcherIndex + 1),
-    {userId, setOnline},
+    { userId, setOnline },
   ];
   console.log('addToWatchList update', userId);
 };
 
-let timer = setInterval(() => {
+const pollFnc = () => {
   console.log('sdk', sdk);
 
   if (!sdk || !sdk.createApplicationUserListQuery) {
@@ -50,7 +50,7 @@ let timer = setInterval(() => {
   }
 
 
-  const userIdList = state.watchList.map(({userId}) => userId);
+  const userIdList = state.watchList.map(({ userId }) => userId);
   console.warn('users registered to track: ', userIdList);
 
   const listQuery = sdk.createApplicationUserListQuery();
@@ -74,20 +74,17 @@ let timer = setInterval(() => {
     }
   });
 
-}, 10000);
+};
+
+let timer = setInterval(pollFnc, 10000);
 
 
 export default function usePresence(userId, thisSdk) {
 
   const [isOnline, setOnline] = useState(null);
 
-  if (userId) {
-    addToWatchList({userId, setOnline});
-  }
+  addToWatchList({userId, setOnline});
 
-
-  // const context = useSendbirdStateContext();
-  // const thisSdk = sendBirdSelectors.getSdk(context);
 
   useEffect(() => {
     console.log('useEffect inside usePresence mounted', userId);

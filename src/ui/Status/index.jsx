@@ -1,38 +1,24 @@
 import React, {useEffect} from 'react';
-// import {sendBirdSelectors, useSendbirdStateContext} from '../../index';
 import usePresence from "../../hooks/usePresence";
 import withSendbirdContext from "../../lib/SendbirdSdkContext";
-// import { withSendBird } from "../../index";
 import './index.scss';
+import PropTypes from "prop-types";
 
 
 function Status(props) {
   const {
-    stores: { sdkStore = {}, userStore = {} },
+    stores: { sdkStore = {} },
     members,
   } = props;
   const { sdk = {} } = sdkStore;
   const sdkIntialized = sdkStore.initialized;
-  // const context = useSendbirdStateContext()
-  // const sdk = sendBirdSelectors.getSdk(context)
 
-  // useEffect(() => {
-  //   if (sdkIntialized) {
-  //
-  //   }
-  // }, [sdkIntialized]);
+  if (!sdkIntialized) {
+    return null;
+  }
 
-  const otherMember = sdkIntialized
-    ? members.find(c => c.userId !== sdk.currentUser.userId)
-    : null;
-
-
-  const isOnline = usePresence(otherMember?.userId, sdk);
-
-  // const status = isOnline
-  //   ? (<div style={{backgroundColor: 'green'}}>Online</div>)
-  //   : (<div style={{backgroundColor: 'grey'}}>Offline</div>)
-
+  const otherMember = members.find(c => c.userId !== sdk.currentUser.userId);
+  const isOnline = usePresence(otherMember.userId, sdk);
   const onlineClass = isOnline ? 'online' : 'offline';
 
   return (
@@ -41,3 +27,19 @@ function Status(props) {
 }
 
 export default withSendbirdContext(Status);
+
+
+Status.propTypes = {
+  stores: PropTypes.shape({
+    sdkStore: PropTypes.shape({
+      initialized: PropTypes.bool,
+      sdk: PropTypes.shape({
+        createApplicationUserListQuery: PropTypes.func,
+      }),
+      error: PropTypes.bool,
+    }),
+    // userStore: PropTypes.shape({
+    //   user: PropTypes.shape({}),
+    // }),
+  }).isRequired,
+};
