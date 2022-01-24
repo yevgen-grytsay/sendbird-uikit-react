@@ -108,6 +108,7 @@ export type Logger = {
 };
 
 export type SendbirdError = Sendbird.SendBirdError;
+export type ReplyType = "NONE" | "QUOTE_REPLY" | "THREAD";
 
 export interface RenderOpenChannelTitleProps {
   channel: Sendbird.OpenChannel;
@@ -141,6 +142,7 @@ export interface OpenChannelProps {
   disableUserProfile?: boolean;
   fetchingParticipants: boolean;
   renderCustomMessage?: RenderCustomMessage;
+  experimentalMessageLimit?: number;
   renderUserProfile?(): JSX.Element;
   renderChannelTitle?(renderProps: RenderOpenChannelTitleProps): JSX.Element;
   renderMessageInput?(renderProps: RenderOpenChannelMessageInputProps): JSX.Element;
@@ -165,6 +167,7 @@ export interface RenderGroupChannelMessageInputProps {
   channel: Sendbird.GroupChannel;
   user: Sendbird.User;
   disabled: boolean;
+  quoteMessage?: Sendbird.UserMessage | Sendbird.FileMessage;
 }
 
 export interface ClientMessageSearchQuery extends SendBird.MessageSearchQuery {
@@ -375,8 +378,8 @@ interface ChannelProps {
   onSearchClick?(): void;
   highlightedMessage?: string | number;
   startingPoint?: number;
-  onBeforeSendUserMessage?(text: string): Sendbird.UserMessageParams;
-  onBeforeSendFileMessage?(file: File): Sendbird.FileMessageParams;
+  onBeforeSendUserMessage?(text: string, quotedMessage?: Sendbird.UserMessage | Sendbird.FileMessage): Sendbird.UserMessageParams;
+  onBeforeSendFileMessage?(file: File, quotedMessage?: Sendbird.UserMessage | Sendbird.FileMessage): Sendbird.FileMessageParams;
   onBeforeUpdateUserMessage?(text: string): Sendbird.UserMessageParams;
   onChatHeaderActionClick?(event: React.MouseEvent<HTMLElement>): void;
   renderCustomMessage?: RenderCustomMessage;
@@ -385,6 +388,7 @@ interface ChannelProps {
   renderChatHeader?: (props: RenderChatHeaderProps) => React.ReactNode;
   renderUserProfile?: (props: RenderUserProfileProps) => React.ReactNode;
   queries?: ChannelQueries;
+  replyType?: ReplyType;
 }
 interface sendBirdSelectorsInterface {
   getSdk: (store: SendBirdState) => SendBirdSelectors.GetSdk;
@@ -446,6 +450,7 @@ interface AppProps {
     resizingWidth?: number | string,
     resizingHeight?: number | string,
   };
+  replyType?: ReplyType;
 }
 
 interface ClientMessage {

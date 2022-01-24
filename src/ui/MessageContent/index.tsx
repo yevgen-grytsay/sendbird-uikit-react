@@ -17,6 +17,7 @@ import FileMessageItemBody from '../FileMessageItemBody';
 import ThumbnailMessageItemBody from '../ThumbnailMessageItemBody';
 import OGMessageItemBody from '../OGMessageItemBody';
 import UnknownMessageItemBody from '../UnknownMessageItemBody';
+import QuoteMessage from '../QuoteMessage';
 
 import {
   getClassName,
@@ -30,6 +31,7 @@ import {
   getMessageCreatedAt,
 } from '../../utils';
 import { UserProfileContext } from '../../lib/UserProfileContext';
+import { ReplyType } from '../../index.js';
 
 interface Props {
   className?: string | Array<string>;
@@ -40,7 +42,7 @@ interface Props {
   chainTop?: boolean;
   chainBottom?: boolean;
   useReaction?: boolean;
-  useReplying?: boolean;
+  replyType?: ReplyType;
   nicknamesMap?: Map<string, string>;
   emojiContainer?: EmojiContainer;
   scrollToMessage?: (createdAt: number, messageId: number) => void;
@@ -49,6 +51,7 @@ interface Props {
   showFileViewer?: (bool: boolean) => void;
   resendMessage?: (message: UserMessage | FileMessage) => void;
   toggleReaction?: (message: UserMessage | FileMessage, reactionKey: string, isReacted: boolean) => void;
+  setQuoteMessage?: (message: UserMessage | FileMessage) => void;
 }
 export default function MessageContent({
   className,
@@ -59,17 +62,17 @@ export default function MessageContent({
   chainTop = false,
   chainBottom = false,
   useReaction = false,
-  // scrollToMessage,
-  // useReplying,
+  replyType,
   nicknamesMap,
   emojiContainer,
+  scrollToMessage,
   showEdit,
   showRemove,
   showFileViewer,
   resendMessage,
   toggleReaction,
+  setQuoteMessage,
 }: Props): ReactElement {
-  // const useReplying: boolean = false; // FIXME: Open replying feature // message?.parentMessageId && getUseReplying(context)
   const messageTypes = getUIKitMessageTypes();
   const { disableUserProfile, renderUserProfile } = useContext(UserProfileContext);
   const avatarRef = useRef(null);
@@ -83,6 +86,8 @@ export default function MessageContent({
   const chainTopClassName = chainTop ? 'chain-top' : '';
   const useReactionClassName = useReaction ? 'use-reactions' : '';
   const supposedHoverClassName = supposedHover ? 'supposed-hover' : '';
+  const useReplying = !!((replyType === 'QUOTE_REPLY') && message?.parentMessageId && message?.parentMessage);
+  const useReplyingClassName = useReplying ? 'use-quote' : '';
 
   if (message?.isAdminMessage?.() || message?.messageType === 'admin') {
     return (<ClientAdminMessage message={message} />);
@@ -94,7 +99,7 @@ export default function MessageContent({
       onMouseLeave={() => setMouseHover(false)}
     >
       {/* left */}
-      <div className={getClassName(['sendbird-message-content__left', useReactionClassName, isByMeClassName])}>
+      <div className={getClassName(['sendbird-message-content__left', useReactionClassName, isByMeClassName, useReplyingClassName])}>
         {(!isByMe && !chainBottom) && (
           /** user profile */
           <ContextMenu
@@ -127,14 +132,6 @@ export default function MessageContent({
             )}
           />
         )}
-        {(isByMe && !chainBottom) && (
-          <div className={getClassName(['sendbird-message-content__left__created-at', supposedHoverClassName])}>
-            <MessageStatus
-              message={message}
-              status={getOutgoingMessageState(channel, message)}
-            />
-          </div>
-        )}
         {/* outgoing menu */}
         {isByMe && (
           <div className={getClassName(['sendbird-message-content-menu', useReactionClassName, supposedHoverClassName, isByMeClassName])}>
@@ -143,16 +140,19 @@ export default function MessageContent({
               channel={channel}
               message={message as UserMessage | FileMessage}
               isByMe={isByMe}
+              replyType={replyType}
               disabled={disabled}
               showEdit={showEdit}
               showRemove={showRemove}
               resendMessage={resendMessage}
+              setQuoteMessage={setQuoteMessage}
               setSupposedHover={setSupposedHover}
             />
             {useReaction && (
               <MessageItemReactionMenu
                 className="sendbird-message-content-menu__reaction-menu"
                 message={message as UserMessage | FileMessage}
+                channel={channel}
                 userId={userId}
                 spaceFromTrigger={{}}
                 emojiContainer={emojiContainer}
@@ -165,7 +165,7 @@ export default function MessageContent({
       </div>
       {/* middle */}
       <div className="sendbird-message-content__middle">
-        {(!isByMe && !chainTop) && (
+        {(!isByMe && !chainTop && !useReplying) && (
           <Label
             className="sendbird-message-content__middle__sender-name"
             type={LabelTypography.CAPTION_2}
@@ -174,58 +174,107 @@ export default function MessageContent({
             {getSenderName(message)}
           </Label>
         )}
-        {/* {useReplying && (
-          <ReplyingMessageAttachment scrollToMessage={scrollToMessage} replyingMessage={replyingMessage} />
-        )} */}
-        {/*
-          A ReplyingMessage should have an another interface
-          because it won't be perfect mesasge instance, it will be from properties of message
-        */}
-        {/* message item body components */}
-        {isTextMessage(message as UserMessage) && (
-          <TextMessageItemBody message={message as UserMessage} isByMe={isByMe} mouseHover={mouseHover} />
-        )}
-        {(isOGMessage(message as UserMessage)) && (
-          <OGMessageItemBody message={message as UserMessage} isByMe={isByMe} mouseHover={mouseHover} />
-        )}
-        {(getUIKitMessageType((message as FileMessage)) === messageTypes.FILE) && (
-          <FileMessageItemBody message={message as FileMessage} isByMe={isByMe} mouseHover={mouseHover} />
-        )}
-        {(isThumbnailMessage(message as FileMessage)) && (
-          <ThumbnailMessageItemBody message={message as FileMessage} isByMe={isByMe} mouseHover={mouseHover} showFileViewer={showFileViewer} />
-        )}
-        {(getUIKitMessageType((message as FileMessage)) === messageTypes.UNKNOWN) && (
-          <UnknownMessageItemBody message={message} isByMe={isByMe} mouseHover={mouseHover} />
-        )}
-        {/* reactions */}
-        {(useReaction && message?.reactions?.length > 0) && (
-          <div className={getClassName([
-            'sendbird-message-content-reactions',
-            (!isByMe || isThumbnailMessage(message as FileMessage) || isOGMessage(message as UserMessage)) ? '' : 'primary',
-            mouseHover ? 'mouse-hover' : '',
-          ])}>
-            <EmojiReactions
-              userId={userId}
+        {/* quote message */}
+        {(useReplying) ? (
+          <div className={getClassName(['sendbird-message-content__middle__quote-message', isByMe ? 'outgoing' : 'incoming', useReplyingClassName])}>
+            <QuoteMessage
               message={message}
+              userId={userId}
               isByMe={isByMe}
-              emojiContainer={emojiContainer}
-              memberNicknamesMap={nicknamesMap}
-              toggleReaction={toggleReaction}
+              onClick={() => {
+                if (message?.parentMessage?.createdAt && message?.parentMessageId) {
+                  scrollToMessage(message.parentMessage.createdAt, message.parentMessageId);
+                }
+              }}
             />
           </div>
-        )}
+        ) : null}
+        {/* container: message item body + emoji reactions */}
+        <div className={getClassName(['sendbird-message-content__middle__body-container'])} >
+          {/* message status component */}
+          {(isByMe && !chainBottom) && (
+            <div className={getClassName(['sendbird-message-content__middle__body-container__created-at', 'left', supposedHoverClassName])}>
+              <div className="sendbird-message-content__middle__body-container__created-at__component-container">
+                <MessageStatus
+                  message={message}
+                  channel={channel}
+                  status={getOutgoingMessageState(channel, message)}
+                />
+              </div>
+            </div>
+          )}
+          {/* message item body components */}
+          {isTextMessage(message as UserMessage) && (
+            <TextMessageItemBody
+              className="sendbird-message-content__middle__message-item-body"
+              message={message as UserMessage}
+              isByMe={isByMe}
+              mouseHover={mouseHover}
+            />
+          )}
+          {(isOGMessage(message as UserMessage)) && (
+            <OGMessageItemBody
+              className="sendbird-message-content__middle__message-item-body"
+              message={message as UserMessage}
+              isByMe={isByMe}
+              mouseHover={mouseHover}
+            />
+          )}
+          {(getUIKitMessageType((message as FileMessage)) === messageTypes.FILE) && (
+            <FileMessageItemBody
+              className="sendbird-message-content__middle__message-item-body"
+              message={message as FileMessage}
+              isByMe={isByMe}
+              mouseHover={mouseHover}
+            />
+          )}
+          {(isThumbnailMessage(message as FileMessage)) && (
+            <ThumbnailMessageItemBody
+              className="sendbird-message-content__middle__message-item-body"
+              message={message as FileMessage}
+              isByMe={isByMe}
+              mouseHover={mouseHover}
+              showFileViewer={showFileViewer}
+            />
+          )}
+          {(getUIKitMessageType((message as FileMessage)) === messageTypes.UNKNOWN) && (
+            <UnknownMessageItemBody
+              className="sendbird-message-content__middle__message-item-body"
+              message={message}
+              isByMe={isByMe}
+              mouseHover={mouseHover}
+            />
+          )}
+          {/* reactions */}
+          {(useReaction && message?.reactions?.length > 0) && (
+            <div className={getClassName([
+              'sendbird-message-content-reactions',
+              (!isByMe || isThumbnailMessage(message as FileMessage) || isOGMessage(message as UserMessage)) ? '' : 'primary',
+              mouseHover ? 'mouse-hover' : '',
+            ])}>
+              <EmojiReactions
+                userId={userId}
+                message={message}
+                isByMe={isByMe}
+                emojiContainer={emojiContainer}
+                memberNicknamesMap={nicknamesMap}
+                toggleReaction={toggleReaction}
+              />
+            </div>
+          )}
+          {(!isByMe && !chainBottom) && (
+            <Label
+              className={getClassName(['sendbird-message-content__middle__body-container__created-at', 'right', supposedHoverClassName])}
+              type={LabelTypography.CAPTION_3}
+              color={LabelColors.ONBACKGROUND_2}
+            >
+              {getMessageCreatedAt(message)}
+            </Label>
+          )}
+        </div>
       </div>
       {/* right */}
-      <div className={getClassName(['sendbird-message-content__right', chainTopClassName, useReactionClassName])}>
-        {(!isByMe && !chainBottom) && (
-          <Label
-            className={getClassName(['sendbird-message-content__right__created-at', supposedHoverClassName])}
-            type={LabelTypography.CAPTION_3}
-            color={LabelColors.ONBACKGROUND_2}
-          >
-            {getMessageCreatedAt(message)}
-          </Label>
-        )}
+      <div className={getClassName(['sendbird-message-content__right', chainTopClassName, useReactionClassName, useReplyingClassName])}>
         {/* incoming menu */}
         {!isByMe && (
           <div className={getClassName(['sendbird-message-content-menu', chainTopClassName, supposedHoverClassName, isByMeClassName])}>
@@ -233,6 +282,7 @@ export default function MessageContent({
               <MessageItemReactionMenu
                 className="sendbird-message-content-menu__reaction-menu"
                 message={message as UserMessage | FileMessage}
+                channel={channel}
                 userId={userId}
                 spaceFromTrigger={{}}
                 emojiContainer={emojiContainer}
@@ -245,10 +295,12 @@ export default function MessageContent({
               channel={channel}
               message={message as UserMessage | FileMessage}
               isByMe={isByMe}
+              replyType={replyType}
               disabled={disabled}
               showEdit={showEdit}
               showRemove={showRemove}
               resendMessage={resendMessage}
+              setQuoteMessage={setQuoteMessage}
               setSupposedHover={setSupposedHover}
             />
           </div>

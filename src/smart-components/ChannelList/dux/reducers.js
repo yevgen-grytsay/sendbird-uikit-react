@@ -105,7 +105,7 @@ export default function reducer(state, action) {
           allChannels: state.allChannels.filter(({ url }) => url !== channel.url),
         };
       }
-      const filteredChannels = state.allChannels.filter((c) => c.url !== channel.url);
+      const filteredChannels = state.allChannels.filter((c) => !(c.url === channel.url && isMe));
       return {
         ...state,
         currentChannel: (isMe && (channel.url === state.currentChannel))

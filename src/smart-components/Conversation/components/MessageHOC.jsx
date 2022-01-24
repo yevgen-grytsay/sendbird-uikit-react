@@ -13,6 +13,7 @@ import Label, { LabelTypography, LabelColors } from '../../../ui/Label';
 import MessageInput from '../../../ui/MessageInput';
 import FileViewer from '../../../ui/FileViewer';
 import RemoveMessageModal from './RemoveMessage';
+import { getClassName } from '../../../utils';
 
 export default function MessageHoc({
   message,
@@ -25,22 +26,32 @@ export default function MessageHoc({
   scrollToMessage,
   resendMessage,
   useReaction,
+  replyType,
   chainTop,
   chainBottom,
   membersMap,
   emojiContainer,
+  animatedMessageId,
   highLightedMessageId,
   toggleReaction,
+  quoteMessage,
+  setQuoteMessage,
   renderCustomMessage,
   currentGroupChannel,
+  handleScroll,
 }) {
   const { sender = {} } = message;
   const [showEdit, setShowEdit] = useState(false);
   const [showRemove, setShowRemove] = useState(false);
   const [showFileViewer, setShowFileViewer] = useState(false);
   const [isAnimated, setIsAnimated] = useState(false);
+  const [isHighlighted, setIsHighlighted] = useState(false);
   const editMessageInputRef = useRef(null);
   const useMessageScrollRef = useRef(null);
+
+  useLayoutEffect(() => {
+    handleScroll();
+  }, [showEdit, message?.reactions?.length]);
 
   useLayoutEffect(() => {
     if (highLightedMessageId === message.messageId) {
@@ -49,6 +60,23 @@ export default function MessageHoc({
           block: 'center',
           inline: 'center',
         });
+        setIsAnimated(false);
+        setTimeout(() => {
+          setIsHighlighted(true);
+        }, 500);
+      }
+    } else {
+      setIsHighlighted(false);
+    }
+  }, [highLightedMessageId, useMessageScrollRef.current, message.messageId]);
+  useLayoutEffect(() => {
+    if (animatedMessageId === message.messageId) {
+      if (useMessageScrollRef && useMessageScrollRef.current) {
+        useMessageScrollRef.current.scrollIntoView({
+          block: 'center',
+          inline: 'center',
+        });
+        setIsHighlighted(false);
         setTimeout(() => {
           setIsAnimated(true);
         }, 500);
@@ -56,7 +84,7 @@ export default function MessageHoc({
     } else {
       setIsAnimated(false);
     }
-  }, [highLightedMessageId, useMessageScrollRef.current, message.messageId]);
+  }, [animatedMessageId, useMessageScrollRef.current, message.messageId]);
   const RenderedMessage = useMemo(() => {
     if (renderCustomMessage) {
       return renderCustomMessage(message, currentGroupChannel, chainTop, chainBottom);
@@ -66,7 +94,7 @@ export default function MessageHoc({
     return null;
   }, [message, message.message, renderCustomMessage]);
 
-  const isByMe = (userId === sender.userId)
+  const isByMe = (userId === sender?.userId)
     || (message.requestState === 'pending')
     || (message.requestState === 'failed');
 
@@ -74,10 +102,11 @@ export default function MessageHoc({
     return (
       <div
         ref={useMessageScrollRef}
-        className={`
-          sendbird-msg-hoc sendbird-msg--scroll-ref
-          ${isAnimated ? 'sendbird-msg-hoc__animated' : ''}
-        `}
+        className={getClassName([
+          'sendbird-msg-hoc sendbird-msg--scroll-ref',
+          isAnimated ? 'sendbird-msg-hoc__animated' : '',
+          isHighlighted ? 'sendbird-msg-hoc__highlighted' : '',
+        ])}
       >
         {/* date-separator */}
         {
@@ -111,10 +140,11 @@ export default function MessageHoc({
   return (
     <div
       ref={useMessageScrollRef}
-      className={`
-        sendbird-msg-hoc sendbird-msg--scroll-ref
-        ${isAnimated ? 'sendbird-msg-hoc__animated' : ''}
-      `}
+      className={getClassName([
+        'sendbird-msg-hoc sendbird-msg--scroll-ref',
+        isAnimated ? 'sendbird-msg-hoc__animated' : '',
+        isHighlighted ? 'sendbird-msg-hoc__highlighted' : '',
+      ])}
       style={{ marginBottom: '2px' }}
     >
       {/* date-separator */}
@@ -138,7 +168,7 @@ export default function MessageHoc({
         chainTop={chainTop}
         chainBottom={chainBottom}
         useReaction={useReaction}
-        // useReplying={} TODO: Set useReplying
+        replyType={replyType}
         nicknamesMap={membersMap}
         emojiContainer={emojiContainer}
         showEdit={setShowEdit}
@@ -146,14 +176,20 @@ export default function MessageHoc({
         showFileViewer={setShowFileViewer}
         resendMessage={resendMessage}
         toggleReaction={toggleReaction}
+        quoteMessage={quoteMessage}
+        setQuoteMessage={setQuoteMessage}
       />
       {/* Modal */}
       {
         showRemove && (
           <RemoveMessageModal
+            message={message}
             onCloseModal={() => setShowRemove(false)}
             onDeleteMessage={() => {
               deleteMessage(message);
+              if (message?.messageId === quoteMessage?.messageId) {
+                setQuoteMessage(null);
+              }
             }}
           />
         )
@@ -192,7 +228,13 @@ MessageHoc.propTypes = {
     messageType: PropTypes.string,
     sender: PropTypes.shape({ userId: PropTypes.string }),
     ogMetaData: PropTypes.shape({}),
+    parentMessageId: PropTypes.number,
+    reactions: PropTypes.arrayOf(PropTypes.number),
   }),
+  animatedMessageId: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]),
   highLightedMessageId: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
@@ -207,6 +249,7 @@ MessageHoc.propTypes = {
   updateMessage: PropTypes.func.isRequired,
   resendMessage: PropTypes.func.isRequired,
   useReaction: PropTypes.bool.isRequired,
+  replyType: PropTypes.oneOf(['NONE', 'QUOTE_REPLY', 'THREAD']).isRequired,
   chainTop: PropTypes.bool.isRequired,
   chainBottom: PropTypes.bool.isRequired,
   membersMap: PropTypes.instanceOf(Map).isRequired,
@@ -219,6 +262,11 @@ MessageHoc.propTypes = {
     })),
   }),
   toggleReaction: PropTypes.func,
+  quoteMessage: PropTypes.shape({
+    messageId: PropTypes.string,
+  }),
+  setQuoteMessage: PropTypes.func.isRequired,
+  handleScroll: PropTypes.func.isRequired,
 };
 
 MessageHoc.defaultProps = {
@@ -229,8 +277,10 @@ MessageHoc.defaultProps = {
   message: {},
   hasSeparator: false,
   disabled: false,
+  animatedMessageId: null,
   highLightedMessageId: null,
   toggleReaction: () => { },
   scrollToMessage: () => { },
   emojiContainer: {},
+  quoteMessage: null,
 };

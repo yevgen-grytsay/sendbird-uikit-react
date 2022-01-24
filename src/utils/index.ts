@@ -96,6 +96,13 @@ const OutgoingMessageStates: OutgoingMessageStates = {
 
 export type CoreMessageType = AdminMessage | UserMessage | FileMessage;
 
+export const isTextuallyNull = (text: string): boolean => {
+  if (text === '' || text === null) {
+    return true;
+  }
+  return false;
+};
+
 export const isImage = (type: string): boolean => SUPPORTED_MIMES.IMAGE.indexOf(type) >= 0;
 export const isVideo = (type: string): boolean => SUPPORTED_MIMES.VIDEO.indexOf(type) >= 0;
 export const isGif = (type: string): boolean => type === 'image/gif';
@@ -114,7 +121,7 @@ export const getOutgoingMessageStates = (): OutgoingMessageStates => ({ ...Outgo
 export const getOutgoingMessageState = (channel: GroupChannel | OpenChannel, message: UserMessage | FileMessage): string => {
   if (message.sendingStatus === 'pending') return OutgoingMessageStates.PENDING;
   if (message.sendingStatus === 'failed') return OutgoingMessageStates.FAILED;
-  if (channel.isGroupChannel()) {
+  if (channel?.isGroupChannel?.()) {
     /* GroupChannel only */
     if ((channel as GroupChannel).getUnreadMemberCount(message) === 0) {
       return OutgoingMessageStates.READ;
@@ -137,6 +144,7 @@ export const isDeliveredMessage = (channel: GroupChannel, message: UserMessage |
 export const isReadMessage = (channel: GroupChannel, message: UserMessage | FileMessage): boolean => (
   getOutgoingMessageState(channel, message) === OutgoingMessageStates.READ
 );
+// TODO: Remove channel from the params, it seems unnecessary
 export const isFailedMessage = (channel: GroupChannel | OpenChannel, message: UserMessage | FileMessage): boolean => (
   getOutgoingMessageState(channel, message) === OutgoingMessageStates.FAILED
 );
@@ -288,13 +296,18 @@ export const copyToClipboard = (text: string): boolean => {
 };
 
 export const getEmojiListAll = (emojiContainer: EmojiContainer): Array<Emoji> => (
-  emojiContainer.emojiCategories
-    .map((emojiCategory: EmojiCategory) => emojiCategory.emojis)
+  emojiContainer?.emojiCategories?.map((emojiCategory: EmojiCategory) => emojiCategory.emojis)
     .reduce((prevArr: Array<Emoji>, currArr: Array<Emoji>) => prevArr.concat(currArr), [])
 );
 export const getEmojiMapAll = (emojiContainer: EmojiContainer): Map<string, Emoji> => {
   const emojiMap = new Map();
-  emojiContainer.emojiCategories.forEach((category: EmojiCategory) => category.emojis.forEach((emoji: Emoji): void => { emojiMap.set(emoji.key, emoji) }));
+  emojiContainer?.emojiCategories?.forEach((category: EmojiCategory) => {
+    category?.emojis?.forEach((emoji: Emoji): void => {
+      if (emoji && emoji.key) {
+        emojiMap.set(emoji.key, emoji);
+      }
+    });
+  });
   return emojiMap;
 };
 
@@ -325,12 +338,16 @@ export const hasSameMembers = <T>(a: T[], b: T[]): boolean => {
 }
 export const isFriend = (user: User): boolean => !!(user.friendDiscoveryKey || user.friendName);
 
-export const filterMessageListParams = (params: MessageListParams, message: UserMessage | FileMessage | AdminMessage): boolean => {
+export const filterMessageListParams = (params: MessageListParams, message: UserMessage | FileMessage): boolean => {
   if (params?.messageType && params.messageType !== message.messageType) {
     return false;
   }
-  if (params?.customTypes?.length > 0 && !params.customTypes.includes(message.customType)) {
-    return false;
+  if (params?.customTypes?.length > 0) {
+    const customTypes = params.customTypes.filter((item) => item !== '*');
+    // Because Chat SDK inserts '*' when customTypes is empty
+    if (customTypes.length > 0 && !customTypes.includes(message.customType)) {
+      return false;
+    }
   }
   if (params?.senderUserIds && params?.senderUserIds?.length > 0) {
     if (message?.isUserMessage() || message.isFileMessage()) {
@@ -341,6 +358,9 @@ export const filterMessageListParams = (params: MessageListParams, message: User
     } else {
       return false;
     }
+  }
+  if (!params?.includeParentMessageInfo && (message?.parentMessageId || message?.parentMessage)) {
+    return false;
   }
   return true;
 };

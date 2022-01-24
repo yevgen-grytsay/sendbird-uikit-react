@@ -61,6 +61,7 @@ export const ConversationPanel = (props) => {
     startingPoint,
     highlightedMessage,
     useReaction,
+    replyType,
     showSearchIcon,
     onSearchClick,
     renderChatItem,
@@ -75,7 +76,6 @@ export const ConversationPanel = (props) => {
     onBeforeSendFileMessage,
     onBeforeUpdateUserMessage,
   } = props;
-
   const { sdk } = sdkStore;
   const { config } = props;
   const sdkError = sdkStore.error;
@@ -97,11 +97,13 @@ export const ConversationPanel = (props) => {
   useEffect(() => {
     setIntialTimeStamp(startingPoint);
   }, [startingPoint, channelUrl]);
+  const [animatedMessageId, setAnimatedMessageId] = useState('');
   const [highLightedMessageId, setHighLightedMessageId] = useState(highlightedMessage);
   useEffect(() => {
     setHighLightedMessageId(highlightedMessage);
   }, [highlightedMessage]);
   const userFilledMessageListQuery = queries.messageListParams;
+  const [quoteMessage, setQuoteMessage] = useState(null);
 
   const [messagesStore, messagesDispatcher] = useReducer(messagesReducer, messagesInitialState);
   const scrollRef = useRef(null);
@@ -125,6 +127,7 @@ export const ConversationPanel = (props) => {
   const { appInfo = {} } = sdk;
   const usingReaction = (
     appInfo.isUsingReaction && !isBroadcast && !isSuper && useReaction
+    // TODO: Make useReaction independent from appInfo.isUsingReaction
   );
 
   const userDefinedDisableUserProfile = disableUserProfile || config.disableUserProfile;
@@ -150,7 +153,7 @@ export const ConversationPanel = (props) => {
 
   // Scrollup is default scroll for channel
   const onScrollCallback = useScrollCallback({
-    currentGroupChannel, lastMessageTimeStamp, userFilledMessageListQuery,
+    currentGroupChannel, lastMessageTimeStamp, userFilledMessageListQuery, replyType,
   }, {
     hasMore,
     logger,
@@ -160,7 +163,7 @@ export const ConversationPanel = (props) => {
 
   const scrollToMessage = useScrollToMessage({
     setIntialTimeStamp,
-    setHighLightedMessageId,
+    setAnimatedMessageId,
     allMessages,
   }, { logger });
 
@@ -172,6 +175,7 @@ export const ConversationPanel = (props) => {
     latestFetchedMessageTimeStamp,
     userFilledMessageListQuery,
     hasMoreToBottom,
+    replyType,
   }, {
     logger,
     messagesDispatcher,
@@ -196,6 +200,10 @@ export const ConversationPanel = (props) => {
     { messagesDispatcher, sdk, logger },
   );
 
+  useEffect(() => {
+    setQuoteMessage(null);
+  }, [channelUrl]);
+
   // Hook to handle ChannelEvents and send values to useReducer using messagesDispatcher
   useHandleChannelEvents(
     { currentGroupChannel, sdkInit, hasMoreToBottom },
@@ -204,6 +212,7 @@ export const ConversationPanel = (props) => {
       sdk,
       logger,
       scrollRef,
+      setQuoteMessage,
     },
   );
 
@@ -215,6 +224,7 @@ export const ConversationPanel = (props) => {
     currentGroupChannel,
     userFilledMessageListQuery,
     intialTimeStamp,
+    replyType,
   }, {
     sdk,
     logger,
@@ -230,7 +240,7 @@ export const ConversationPanel = (props) => {
   }, [channelUrl, sdkInit]);
 
   // handling connection breaks
-  useHandleReconnect({ isOnline }, {
+  useHandleReconnect({ isOnline, replyType }, {
     logger,
     sdk,
     currentGroupChannel,
@@ -322,6 +332,7 @@ export const ConversationPanel = (props) => {
             onClick={() => {
               if (intialTimeStamp) {
                 setIntialTimeStamp(null);
+                setAnimatedMessageId(null);
                 setHighLightedMessageId(null);
               } else {
                 utils.scrollIntoLast();
@@ -349,6 +360,7 @@ export const ConversationPanel = (props) => {
               swapParams={
                 sdk && sdk.getErrorFirstCallback && sdk.getErrorFirstCallback()
               }
+              animatedMessageId={animatedMessageId}
               highLightedMessageId={highLightedMessageId}
               userId={userId}
               hasMore={hasMore}
@@ -358,6 +370,7 @@ export const ConversationPanel = (props) => {
               scrollRef={scrollRef}
               readStatus={readStatus}
               useReaction={usingReaction}
+              replyType={replyType}
               allMessages={allMessages}
               scrollToMessage={scrollToMessage}
               emojiAllMap={emojiAllMap}
@@ -369,9 +382,12 @@ export const ConversationPanel = (props) => {
               toggleReaction={toggleReaction}
               emojiContainer={emojiContainer}
               renderChatItem={renderChatItem}
+              quoteMessage={quoteMessage}
+              setQuoteMessage={setQuoteMessage}
               showScrollBot={showScrollBot}
               onClickScrollBot={() => {
                 setIntialTimeStamp(null);
+                setAnimatedMessageId(null);
                 setHighLightedMessageId(null);
               }}
               renderCustomMessage={renderCustomMessage}
@@ -387,20 +403,22 @@ export const ConversationPanel = (props) => {
           channel={currentGroupChannel}
           user={user}
           ref={messageInputRef}
-          onSendMessage={onSendMessage}
-          onFileUpload={onSendFileMessage}
-          renderMessageInput={renderMessageInput}
           isOnline={isOnline}
           initialized={initialized}
+          onSendMessage={onSendMessage}
+          onFileUpload={onSendFileMessage}
+          quoteMessage={quoteMessage}
+          setQuoteMessage={setQuoteMessage}
+          renderMessageInput={renderMessageInput}
         />
-        <div className="sendbird-conversation__typing-indicator">
-          <TypingIndicator channelUrl={channelUrl} sb={sdk} logger={logger} />
+        <div className="sendbird-conversation__footer__typing-indicator">
+          <TypingIndicator className="sendbird-conversation__footer__typing-indicator__text" channelUrl={channelUrl} sb={sdk} logger={logger} />
+          {
+            !isOnline && (
+              <ConnectionStatus sdkInit={sdkInit} sb={sdk} logger={logger} />
+            )
+          }
         </div>
-        {
-          !isOnline && (
-            <ConnectionStatus sdkInit={sdkInit} sb={sdk} logger={logger} />
-          )
-        }
       </div>
     </UserProfileProvider>
   );
@@ -497,6 +515,7 @@ ConversationPanel.propTypes = {
   onSearchClick: PropTypes.func,
   onChatHeaderActionClick: PropTypes.func,
   useReaction: PropTypes.bool,
+  replyType: PropTypes.oneOf(['NONE', 'QUOTE_REPLY', 'THREAD']),
   disableUserProfile: PropTypes.bool,
   renderUserProfile: PropTypes.func,
   useMessageGrouping: PropTypes.bool,
@@ -515,6 +534,7 @@ ConversationPanel.defaultProps = {
   renderMessageInput: null,
   renderChatHeader: null,
   useReaction: true,
+  replyType: 'NONE',
   showSearchIcon: false,
   onSearchClick: noop,
   disableUserProfile: false,

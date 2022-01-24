@@ -1,5 +1,68 @@
 # Changelog
 
+## [2.5.3] (Jan 19 2022)
+## [2.5.3-alpha] (Jan 19 2022)
+- Bugfix
+  * Modify type of `renderChatItem` to function
+  * Modify dependencies of react and react-dom libraries
+  * Do not update current user info when `nickname` and `userProfileUrl` props are empty
+
+## [2.5.2] (Jan 5 2022)
+- Bugfix
+  * Move scroll when the height of message item changes
+  * Fix emoji reaction background color when the message is highlighted
+
+## [2.5.2-alpha] (Dec 24 2021)
+- Features
+Implement experimentalMessageLimit for openChannel
+This feature limits the no.of messages that are stored in
+OpenChannel. This is intended for live streaming, where multiple
+thousands of messages are expected to flow
+Recommend a limit higher than 150 and less than 500
+Usage
+```
+<OpenChannel experimentalMessageLimit={number} />
+```
+
+- Bugix
+  * Fix time stamp position on message threading
+  * Add quote message to onBeforeSendFileMessage params
+
+## [2.5.1] (Dec 14 2021)
+- Bugfix
+  * Add type definition for `replyType` into the props of <App /> and <Channel />
+  * Replace the position of message status and timestamp
+  * Change word-break property for text message in group channel
+  * Fix admin message break in group channel
+
+## [2.5.1-alpha.2] (Dec 10 2021)
+This is an alpha version release for bugfix
+## [2.5.1-alpha.1] (Dec 10 2021)
+This is an alpha version release for bugfix
+## [2.5.1-alpha] (Dec 10 2021)
+This is an alpha version release for bugfix
+
+## [2.5.0] (Nov 23 2021)
+
+- Features
+  * Support MessageThreading
+  * <App /> and <Channel /> can enable or disable message threading feature using prop: `replyType`
+  * `replyType="QUOTE_REPLY"` enable message threading
+  * `replyType="NONE"` disable message threading, and this is a default option
+- Bugfix
+  * Change the message status component location from the bottom of the message to the side of the message content
+
+## [2.5.0-alpha] (Nov 22 2021)
+
+This is an alpha version release for message threading
+
+## [2.4.4] (Nov 17 2021)
+- Feature
+  * Add a debouncing logic to the message search component
+- Bugfix
+  * Add an order to the message search as 'ts'
+  * Add an optional chaining for some properties of Message
+
 ## [2.4.3] (Nov 1 2021)
 - Bugfix
   * Use OpenChannel in the getOpenChannelDeleteMessage
