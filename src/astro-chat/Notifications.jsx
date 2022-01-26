@@ -1,7 +1,9 @@
 import useSendbirdStateContext from "../hooks/useSendbirdStateContext";
+import {usePageVisibility} from 'react-page-visibility';
 import sendbirdSelectors from "../lib/selectors";
 import React, {useEffect} from "react";
 import uuidv4 from "../utils/uuid";
+import withSendbirdContext from "../lib/SendbirdSdkContext";
 
 function notifyMe(message) {
   // Let's check if the browser supports notifications
@@ -29,20 +31,14 @@ function notifyMe(message) {
   // want to be respectful there is no need to bother them any more.
 }
 
-export default function Notifications({}) {
+function Notifications(props) {
+
+  const {config: {logger}} = props;
 
   const context = useSendbirdStateContext();
   const sdk = sendbirdSelectors.getSdk(context);
 
-  // useEffect(() =>  {
-  //   if (!sdk) {
-  //     return;
-  //   }
-  //
-  //   Notification.requestPermission().then(function(permission) {
-  //     console.log(result);
-  //   });
-  // }, [sdk]);
+  const isVisible = usePageVisibility();
 
   useEffect(() => {
     const messageReceiverId = uuidv4();
@@ -50,9 +46,11 @@ export default function Notifications({}) {
       const ChannelHandler = new sdk.ChannelHandler();
 
       ChannelHandler.onMessageReceived = (channel, message) => {
-        console.log('[MESSAGE]', channel, message);
-
-        notifyMe(message.message);
+        logger.info('[MESSAGE]', channel, message);
+        logger.info('isVisible', isVisible);
+        if (!isVisible) {
+          notifyMe(message.message);
+        }
       };
 
       sdk.addChannelHandler(messageReceiverId, ChannelHandler);
@@ -64,7 +62,9 @@ export default function Notifications({}) {
         sdk.removeChannelHandler(messageReceiverId);
       }
     };
-  }, [sdk]);
+  }, [sdk, isVisible]);
 
   return null;
 }
+
+export default withSendbirdContext(Notifications);
