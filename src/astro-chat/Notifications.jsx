@@ -29,13 +29,13 @@ function notifyMe(message) {
   // want to be respectful there is no need to bother them any more.
 }
 
-function Notifications(props) {
-  const { config: { logger } } = props;
+function Notifications() {
+  // const { config: { logger } } = props;
 
   const context = useSendbirdStateContext();
   const sdk = getSdk(context);
 
-  const isVisible = usePageVisibility();
+  const isPageVisible = usePageVisibility();
 
   useEffect(() => {
     const messageReceiverId = uuidv4();
@@ -43,11 +43,31 @@ function Notifications(props) {
       const ChannelHandler = new sdk.ChannelHandler();
 
       ChannelHandler.onMessageReceived = (channel, message) => {
-        logger.info('[MESSAGE]', channel, message);
-        logger.info('isVisible', isVisible);
-        if (!isVisible) {
-          notifyMe(message.message);
+        // logger.info('[MESSAGE]', channel, message);
+        // logger.info('isPageVisible', isPageVisible);
+        console.log('[MESSAGE]', channel, message);
+        console.log('isPageVisible', isPageVisible);
+
+        const isSenderCurrentUser = message.sender.userId === sdk.currentUser.userId;
+
+        console.log('[NOTIFICATION]', {
+          isPageVisible,
+          isSenderCurrentUser,
+        });
+
+        if (isSenderCurrentUser) {
+          console.log('Skip notification: current user is sender');
+
+          return;
         }
+
+        if (isPageVisible) {
+          console.log('Skip notification: page is visible');
+
+          return;
+        }
+
+        notifyMe(message.message);
       };
 
       sdk.addChannelHandler(messageReceiverId, ChannelHandler);
@@ -58,7 +78,7 @@ function Notifications(props) {
         sdk.removeChannelHandler(messageReceiverId);
       }
     };
-  }, [sdk, isVisible]);
+  }, [sdk, isPageVisible]);
 
   return null;
 }

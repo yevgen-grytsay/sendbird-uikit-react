@@ -13,13 +13,13 @@ const addToWatchList = ({ userId, setOnline }) => {
       ...state.watchList,
       { userId, setOnline },
     ];
-    console.log('addToWatchList add', userId);
+    // console.log('addToWatchList add', userId);
 
     return;
   }
 
   if (state.watchList[watcherIndex].setOnline === setOnline) {
-    console.log('addToWatchList skip', userId);
+    // console.log('addToWatchList skip', userId);
 
     return;
   }
@@ -29,7 +29,7 @@ const addToWatchList = ({ userId, setOnline }) => {
     ...state.watchList.slice(watcherIndex + 1),
     { userId, setOnline },
   ];
-  console.log('addToWatchList update', userId);
+  // console.log('addToWatchList update', userId);
 };
 
 const pollFnc = () => {
@@ -80,14 +80,14 @@ export default function usePresence(userId, thisSdk) {
   addToWatchList({ userId, setOnline });
 
   useEffect(() => {
-    console.log('useEffect inside usePresence mounted', userId);
+    // console.log('useEffect inside usePresence mounted', userId);
 
     if (!sdk) {
       sdk = thisSdk;
     }
 
     return () => {
-      console.log('useEffect inside usePresence unmounted', userId);
+      // console.log('useEffect inside usePresence unmounted', userId);
     };
   }, [sdk]);
 

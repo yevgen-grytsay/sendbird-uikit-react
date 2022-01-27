@@ -26,7 +26,7 @@ export default function Chat({ userId, nickname, theme }) {
   const [currentChannelUrl, setCurrentChannelUrl] = useState(null);
 
   Notification.requestPermission().then((permission) => {
-    logger.info('Notification permission result', permission);
+    console.log('Notification permission result', permission);
   });
 
   return (
