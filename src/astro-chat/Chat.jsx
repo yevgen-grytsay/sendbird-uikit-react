@@ -9,6 +9,7 @@ import Channel from '../smart-components/Conversation';
 import ChannelSettings from '../smart-components/ChannelSettings';
 import { LOG_LEVELS } from '../lib/Logger';
 import Notifications from './Notifications';
+import Favicon from './Favicon';
 // import App from "../smart-components/App";
 // import {
 //   SendBirdProvider,
@@ -40,6 +41,7 @@ export default function Chat({ userId, nickname, theme }) {
       >
 
         <Notifications />
+        <Favicon />
 
         <div className="sendbird-app__wrap">
           <div className="sendbird-app__channellist-wrap">
