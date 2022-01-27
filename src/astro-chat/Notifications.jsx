@@ -1,42 +1,39 @@
-import useSendbirdStateContext from "../hooks/useSendbirdStateContext";
-import {usePageVisibility} from 'react-page-visibility';
-import sendbirdSelectors from "../lib/selectors";
-import React, {useEffect} from "react";
-import uuidv4 from "../utils/uuid";
-import withSendbirdContext from "../lib/SendbirdSdkContext";
+import { useEffect } from 'react';
+import { usePageVisibility } from 'react-page-visibility';
+import { getSdk } from '../lib/selectors';
+import uuidv4 from '../utils/uuid';
+import withSendbirdContext from '../lib/SendbirdSdkContext';
+import useSendbirdStateContext from '../hooks/useSendbirdStateContext';
 
 function notifyMe(message) {
+  /* eslint-disable no-new */
   // Let's check if the browser supports notifications
-  if (!("Notification" in window)) {
-    console.warn("This browser does not support desktop notification");
-  }
-
-  // Let's check whether notification permissions have already been granted
-  else if (Notification.permission === "granted") {
+  if (!('Notification' in window)) {
+    console.warn('This browser does not support desktop notification');
+  } else if (Notification.permission === 'granted') {
+    // Let's check whether notification permissions have already been granted
     // If it's okay let's create a notification
-    var notification = new Notification('Zodianic Chat New Message', {body: message});
-  }
-
-  // Otherwise, we need to ask the user for permission
-  else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then(function (permission) {
+    new Notification('Zodianic Chat New Message', { body: message });
+  } else if (Notification.permission !== 'denied') {
+    // Otherwise, we need to ask the user for permission
+    Notification.requestPermission().then((permission) => {
       // If the user accepts, let's create a notification
-      if (permission === "granted") {
-        var notification = new Notification('Zodianic Chat New Message', {body: message});
+      if (permission === 'granted') {
+        new Notification('Zodianic Chat New Message', { body: message });
       }
     });
   }
 
+  /* eslint-enable no-new */
   // At last, if the user has denied notifications, and you
   // want to be respectful there is no need to bother them any more.
 }
 
 function Notifications(props) {
-
-  const {config: {logger}} = props;
+  const { config: { logger } } = props;
 
   const context = useSendbirdStateContext();
-  const sdk = sendbirdSelectors.getSdk(context);
+  const sdk = getSdk(context);
 
   const isVisible = usePageVisibility();
 
@@ -58,7 +55,6 @@ function Notifications(props) {
 
     return () => {
       if (sdk && sdk.removeChannelHandler) {
-        // logger.info('Channel | useHandleChannelEvents: Removing message reciver handler', messageReceiverId);
         sdk.removeChannelHandler(messageReceiverId);
       }
     };
