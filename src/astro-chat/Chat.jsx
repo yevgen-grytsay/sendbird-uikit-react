@@ -24,6 +24,11 @@ const LOG_LEVEL = process.env.NODE_ENV === 'production' ? LOG_LEVELS.ERROR : LOG
 export default function Chat({ userId, nickname, theme }) {
   const [showSettings, setShowSettings] = useState(false);
   const [currentChannelUrl, setCurrentChannelUrl] = useState(null);
+
+  Notification.requestPermission().then((permission) => {
+    logger.info('Notification permission result', permission);
+  });
+
   return (
     <div style={{ height: '100vh' }}>
       <SendBirdProvider
