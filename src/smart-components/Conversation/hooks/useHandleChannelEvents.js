@@ -4,6 +4,7 @@ import * as messageActions from '../dux/actionTypes';
 import { uuidv4 } from '../../../utils/uuid';
 import compareIds from '../../../utils/compareIds';
 import { scrollIntoLast } from '../utils';
+import { usePageVisibility } from 'react-page-visibility';
 
 /**
  * Handles ChannelEvents and send values to dispatcher using messagesDispatcher
@@ -21,6 +22,9 @@ function useHandleChannelEvents({ currentGroupChannel, sdkInit, hasMoreToBottom 
   setQuoteMessage,
 }) {
   const channelUrl = currentGroupChannel && currentGroupChannel.url;
+
+  const isPageVisible = usePageVisibility();
+
   useEffect(() => {
     const messageReceiverId = uuidv4();
     if (channelUrl && sdk && sdk.ChannelHandler) {
@@ -33,7 +37,7 @@ function useHandleChannelEvents({ currentGroupChannel, sdkInit, hasMoreToBottom 
           let scrollToEnd = false;
           try {
             const { current } = scrollRef;
-            scrollToEnd = current.offsetHeight + current.scrollTop >= current.scrollHeight;
+            scrollToEnd = current.offsetHeight + current.scrollTop >= current.scrollHeight && isPageVisible;
           } catch (error) {
             //
           }
@@ -175,7 +179,7 @@ function useHandleChannelEvents({ currentGroupChannel, sdkInit, hasMoreToBottom 
         sdk.removeChannelHandler(messageReceiverId);
       }
     };
-  }, [channelUrl, sdkInit]);
+  }, [channelUrl, sdkInit, isPageVisible]);
 }
 
 export default useHandleChannelEvents;
