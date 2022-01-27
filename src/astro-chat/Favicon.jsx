@@ -1,6 +1,6 @@
-import useTotalUnreadMessageCount from '../hooks/useTotalUnreadMessageCount';
-import withSendbirdContext from "../lib/SendbirdSdkContext";
 import { useEffect } from 'react';
+import useTotalUnreadMessageCount from '../hooks/useTotalUnreadMessageCount';
+import withSendbirdContext from '../lib/SendbirdSdkContext';
 import faviconDefault from './favicon-96x96.png';
 import faviconUnread from './favicon_unread-96x96.png';
 
@@ -18,7 +18,7 @@ function Favicon(props) {
       document.querySelector('title').innerText = `${count} unread messages`;
     } else {
       document.getElementById('favicon').href = faviconDefault;
-      document.querySelector('title').innerText = `No unread messages`;
+      document.querySelector('title').innerText = 'No unread messages';
     }
     console.warn('[UNREAD]', count);
   }, [count]);
