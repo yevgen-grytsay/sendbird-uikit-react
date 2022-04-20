@@ -69,3 +69,17 @@
     top: 16px;
   }
 }
+
+.sendbird-channel-header .connection-status {
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  margin: 0 5px;
+  display: inline-block;
+
+  background-color: green;
+}
+
+.sendbird__offline .sendbird-channel-header .connection-status {
+  background-color: gray;
+}
