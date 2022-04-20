@@ -49,7 +49,7 @@ export default function ChannelHeader({
                   color={LabelColors.ONBACKGROUND_1}
                 >
                   {user.nickname || stringSet.NO_NAME}
-                  <span className="connection-status"></span>
+                  <span className="connection-status" />
                 </Label>
                 <Label
                   className="sendbird-channel-header__title__right__user-id"

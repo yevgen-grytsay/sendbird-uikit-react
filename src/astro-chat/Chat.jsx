@@ -46,6 +46,7 @@ export default function Chat({ userId, nickname, theme }) {
         <div className="sendbird-app__wrap">
           <div className="sendbird-app__channellist-wrap">
             <ChannelList
+              disableAutoSelect={true}
               onChannelSelect={(channel) => {
                 if (channel && channel.url) {
                   setCurrentChannelUrl(channel.url);
