@@ -123,7 +123,7 @@ function ChannelList(props) {
         sdk.removeChannelHandler(sdkChannelHandlerId);
       }
     };
-  }, [sdkIntialized, userFilledChannelListQuery, sortChannelList]);
+  }, [sdkIntialized, userFilledChannelListQuery, sortChannelList, isOnline]);
 
   const { allChannels } = channelListStore;
   const sortedChannels = (sortChannelList && typeof sortChannelList === 'function')
