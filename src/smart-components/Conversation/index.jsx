@@ -338,7 +338,11 @@ export const ConversationPanel = (props) => {
                 utils.scrollIntoLast();
                 // there is no scroll
                 if (scrollRef.current.scrollTop === 0) {
-                  currentGroupChannel.markAsRead();
+                  try {
+                    currentGroupChannel.markAsRead();
+                  } catch {
+                    //
+                  }
                   messagesDispatcher({
                     type: messageActionTypes.MARK_AS_READ,
                   });

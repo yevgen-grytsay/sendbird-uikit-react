@@ -1,5 +1,11 @@
-import React, { ReactElement, useContext, useRef, useState } from 'react';
+import React, {
+  ReactElement,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 import { GroupChannel, AdminMessage, UserMessage, FileMessage, EmojiContainer } from 'sendbird';
+import format from 'date-fns/format';
 import './index.scss';
 
 import Avatar from '../Avatar';
@@ -26,11 +32,10 @@ import {
   isTextMessage,
   isOGMessage,
   isThumbnailMessage,
-  getOutgoingMessageState,
   getSenderName,
-  getMessageCreatedAt,
 } from '../../utils';
 import { UserProfileContext } from '../../lib/UserProfileContext';
+import { LocalizationContext } from '../../lib/LocalizationContext';
 import { ReplyType } from '../../index.js';
 
 interface Props {
@@ -75,6 +80,7 @@ export default function MessageContent({
 }: Props): ReactElement {
   const messageTypes = getUIKitMessageTypes();
   const { disableUserProfile, renderUserProfile } = useContext(UserProfileContext);
+  const { dateLocale } = useContext(LocalizationContext);
   const avatarRef = useRef(null);
   const [mouseHover, setMouseHover] = useState(false);
   const [supposedHover, setSupposedHover] = useState(false);
@@ -88,7 +94,6 @@ export default function MessageContent({
   const supposedHoverClassName = supposedHover ? 'supposed-hover' : '';
   const useReplying = !!((replyType === 'QUOTE_REPLY') && message?.parentMessageId && message?.parentMessage);
   const useReplyingClassName = useReplying ? 'use-quote' : '';
-
   if (message?.isAdminMessage?.() || message?.messageType === 'admin') {
     return (<ClientAdminMessage message={message} />);
   }
@@ -198,7 +203,6 @@ export default function MessageContent({
                 <MessageStatus
                   message={message}
                   channel={channel}
-                  status={getOutgoingMessageState(channel, message)}
                 />
               </div>
             </div>
@@ -268,7 +272,7 @@ export default function MessageContent({
               type={LabelTypography.CAPTION_3}
               color={LabelColors.ONBACKGROUND_2}
             >
-              {getMessageCreatedAt(message)}
+              {format(message.createdAt, 'p', { locale: dateLocale })}
             </Label>
           )}
         </div>

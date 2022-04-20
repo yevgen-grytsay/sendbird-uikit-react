@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import Sendbird from 'sendbird';
+import type { Locale } from 'date-fns';
 
 export type OpenChannelType = Sendbird.OpenChannel;
 export type GroupChannelType = Sendbird.GroupChannel;
@@ -46,7 +47,8 @@ export namespace SendBirdSelectors {
   ) => Promise<Sendbird.UserMessage>;
   type GetSendFileMessage = (
     channelUrl: string,
-    fileMessageParams: Sendbird.FileMessageParams
+    fileMessageParams: Sendbird.FileMessageParams,
+    progressHandler: (event: ProgressEvent) => void
   ) => Promise<Sendbird.FileMessage>;
   type GetUpdateUserMessage = (
     channelUrl: string,
@@ -143,7 +145,7 @@ export interface OpenChannelProps {
   fetchingParticipants: boolean;
   renderCustomMessage?: RenderCustomMessage;
   experimentalMessageLimit?: number;
-  renderUserProfile?(): JSX.Element;
+  renderUserProfile?(props: SendbirdUIKit.RenderUserProfileProps): JSX.Element;
   renderChannelTitle?(renderProps: RenderOpenChannelTitleProps): JSX.Element;
   renderMessageInput?(renderProps: RenderOpenChannelMessageInputProps): JSX.Element;
   onBeforeSendUserMessage?(text: string): Sendbird.UserMessageParams;
@@ -344,6 +346,7 @@ interface SendBirdProviderProps {
   theme?: 'light' | 'dark';
   nickname?: string;
   profileUrl?: string;
+  dateLocale?: Locale;
   disableUserProfile?: boolean;
   renderUserProfile?: (props: RenderUserProfileProps) => React.ReactNode;
   allowProfileEdit?: boolean;
@@ -360,6 +363,7 @@ interface SendBirdProviderProps {
 interface ChannelListProps {
   disableUserProfile?: boolean;
   allowProfileEdit?: boolean;
+  sortChannelList?(channelList: Array<Sendbird.GroupChannel>): Array<Sendbird.GroupChannel>;
   onBeforeCreateChannel?(users: Array<string>): Sendbird.GroupChannelParams;
   onThemeChange?(theme: string): void;
   onProfileEditSuccess?(user: Sendbird.User): void;
@@ -368,6 +372,7 @@ interface ChannelListProps {
   renderUserProfile?: (props: RenderUserProfileProps) => React.ReactNode;
   renderHeader?: (props: void) => React.ReactNode;
   queries?: ChannelListQueries;
+  disableAutoSelect?: boolean;
 }
 interface ChannelProps {
   channelUrl: string;
@@ -434,6 +439,7 @@ interface AppProps {
   theme?: 'light' | 'dark';
   userListQuery?(): UserListQuery;
   nickname?: string;
+  dateLocale?: Locale;
   profileUrl?: string;
   allowProfileEdit?: boolean;
   disableUserProfile?: boolean;
@@ -451,6 +457,7 @@ interface AppProps {
     resizingHeight?: number | string,
   };
   replyType?: ReplyType;
+  disableAutoSelect?: boolean;
 }
 
 interface ClientMessage {
